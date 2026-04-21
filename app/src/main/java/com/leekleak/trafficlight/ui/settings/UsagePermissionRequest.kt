@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.model.PermissionManager
@@ -93,12 +94,13 @@ fun UsagePermissionRequest(paddingValues: PaddingValues) {
                 )
                 Text(
                     text = stringResource(R.string.usage_statistics_description),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
                 )
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
+                /*Button(
                     colors = ButtonDefaults.filledTonalButtonColors(),
                     onClick = { permissionManager.openUsagePermissionHelp(activity) },
                 ) {
@@ -112,7 +114,7 @@ fun UsagePermissionRequest(paddingValues: PaddingValues) {
                         )
                         Text(stringResource(R.string.help))
                     }
-                }
+                }*/
                 Button(
                     colors = ButtonDefaults.buttonColors(),
                     onClick = { permissionManager.askUsagePermission(activity) },

@@ -4,6 +4,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_NONE
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -27,9 +29,22 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import timber.log.Timber
+import java.util.Locale
 
 class MainActivity : ComponentActivity(), KoinComponent {
     private val appIconFactory: AppIconFetcher.Factory by inject()
+
+    override fun attachBaseContext(newBase: Context) {
+        val locale = Locale("fa")
+        Locale.setDefault(locale)
+
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+        config.setLayoutDirection(locale)
+
+        super.attachBaseContext(newBase.createConfigurationContext(config))
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

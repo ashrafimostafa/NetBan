@@ -116,7 +116,7 @@ fun Overview(
         }
         categoryTitle { stringResource(R.string.data_plans) }
 
-        items(activePlans, {it.subscriberID}) {
+        /*items(activePlans, {it.subscriberID}) {
             if (it.dataMax != 0L) {
                 ConfiguredDataPlan(it) {
                     navigator.goTo(PlanConfig(it.subscriberID))
@@ -126,9 +126,9 @@ fun Overview(
                     navigator.goTo(PlanConfig(it.subscriberID))
                 }
             }
-        }
+        }*/
 
-        if (shizukuHint && !shizukuTracking) {
+        /*if (shizukuHint && !shizukuTracking) {
             item {
                 PermissionCard(
                     modifier = Modifier.animateItem(),
@@ -145,7 +145,7 @@ fun Overview(
                     }
                 )
             }
-        }
+        }*/
 
         if (weeklyUsage.isNotEmpty()) {
             overviewTab(

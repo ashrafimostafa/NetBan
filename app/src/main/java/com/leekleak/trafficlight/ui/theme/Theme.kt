@@ -12,6 +12,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -19,8 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import com.leekleak.trafficlight.R
@@ -44,7 +49,30 @@ fun Theme(
         }
     }
 
-    MaterialTheme (theme.getColors()) { content() }
+    val layoutDirection = LayoutDirection.Rtl
+
+
+    val typography = androidx.compose.material3.Typography(
+        displayLarge = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Normal),
+        displayMedium = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Normal),
+        displaySmall = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Normal),
+        headlineLarge = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Bold),
+        headlineMedium = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Bold),
+        headlineSmall = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Bold),
+        titleLarge = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Medium),
+        titleMedium = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Medium),
+        titleSmall = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Medium),
+        bodyLarge = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Normal),
+        bodyMedium = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Normal),
+        bodySmall = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Normal),
+        labelLarge = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Medium),
+        labelMedium = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Medium),
+        labelSmall = TextStyle(fontFamily = vazirFont(), fontWeight = FontWeight.Medium)
+    )
+
+    CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+        MaterialTheme (theme.getColors(), typography = typography) { content() }
+    }
 }
 
 enum class Theme {

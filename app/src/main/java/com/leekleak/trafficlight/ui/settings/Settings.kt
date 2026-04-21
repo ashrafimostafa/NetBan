@@ -119,7 +119,7 @@ fun Settings(paddingValues: PaddingValues) {
                     }
                 },
             )
-            AnimatedVisibility(
+            /*AnimatedVisibility(
                 visible = notification,
                 enter = fadeIn() + slideInVertically() + expandVertically(),
                 exit = fadeOut() + slideOutVertically() + shrinkVertically()
@@ -129,10 +129,10 @@ fun Settings(paddingValues: PaddingValues) {
                     icon = painterResource(R.drawable.notification_settings),
                     onClick = { navigator.goTo(NotificationSettings) }
                 )
-            }
+            }*/
         }
 
-        categoryTitleSmall { stringResource(R.string.data_plans) }
+        /*categoryTitleSmall { stringResource(R.string.data_plans) }
         item {
             val shizukuTracking by appPreferenceRepo.shizukuTracking.collectAsState(false)
             val shizukuPermission by permissionManager.shizukuPermissionFlow.collectAsState(false)
@@ -154,7 +154,7 @@ fun Settings(paddingValues: PaddingValues) {
                     }
                 },
             )
-        }
+        }*/
 
         categoryTitleSmall { stringResource(R.string.ui) }
         item {
@@ -180,7 +180,7 @@ fun Settings(paddingValues: PaddingValues) {
         }
 
         categoryTitleSmall { stringResource(R.string.about) }
-        item {
+        /*item {
             NavigatePreference(
                 title = stringResource(R.string.github),
                 summary = stringResource(R.string.github_description),
@@ -194,7 +194,7 @@ fun Settings(paddingValues: PaddingValues) {
                 icon = painterResource(R.drawable.donate),
                 onClick = { openLink(activity, "https://github.com/sponsors/leekleak") },
             )
-        }
+        }*/
         item {
             NavigatePreference(
                 title = stringResource(R.string.version, BuildConfig.VERSION_NAME),

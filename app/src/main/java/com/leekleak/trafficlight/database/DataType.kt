@@ -89,7 +89,8 @@ data class UsageQuery (
                 add(dataUID.getName(context))
         }
 
-        val isRtl = context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+//        val isRtl = context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val isRtl = true
         return (if (isRtl) parts.reversed() else parts).joinToString(" · ")
     }
 }

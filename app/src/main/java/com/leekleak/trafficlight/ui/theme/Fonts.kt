@@ -5,26 +5,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import com.leekleak.trafficlight.R
 
 @Composable
-fun momoTrustDisplayFont(): FontFamily {
+fun vazirFont(): FontFamily {
     return FontFamily(
         Font(
-            R.font.momo_trust_display
+            R.font.vazir
         ),
     )
 }
 
 @Composable
-fun carrierFont(): FontFamily = robotoFlex(-10f,25f,675f)
+fun carrierFont(): FontFamily = FontFamily(
+    Font(
+        R.font.vazir
+    ),
+)
 
 @Composable
 fun doHyeonFont(): FontFamily {
     return FontFamily(
         Font(
-            R.font.do_hyeon,
+            R.font.vazir
         ),
     )
 }
@@ -38,12 +41,7 @@ fun robotoFlex(
 ): FontFamily {
     return FontFamily(
         Font(
-            R.font.roboto_flex,
-            variationSettings = FontVariation.Settings(
-                FontVariation.Setting("slnt", slant),
-                FontVariation.Setting("wdth", width),
-                FontVariation.Setting("wght", weight)
-            )
+            R.font.vazir
         ),
     )
 }
@@ -55,10 +53,7 @@ fun jetbrainsMono(
 ): FontFamily {
     return FontFamily(
         Font(
-            R.font.jetbrains_mono,
-            variationSettings = FontVariation.Settings(
-                FontVariation.Setting("wght", weight)
-            )
+            R.font.vazir
         ),
     )
 }
@@ -70,10 +65,7 @@ fun outfit(
 ): FontFamily {
     return FontFamily(
         Font(
-            R.font.outfit,
-            variationSettings = FontVariation.Settings(
-                FontVariation.Setting("wght", weight)
-            )
+            R.font.vazir
         ),
     )
 }

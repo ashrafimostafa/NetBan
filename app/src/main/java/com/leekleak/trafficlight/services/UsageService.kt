@@ -236,7 +236,7 @@ class UsageService : Service() {
     private val paint by lazy {
         Paint().apply {
             color = ContextCompat.getColor(this@UsageService, R.color.white)
-            typeface = resources.getFont(R.font.roboto_condensed_semi_bold)
+            typeface = resources.getFont(R.font.vazir)
             textAlign = Paint.Align.CENTER
         }
     }
