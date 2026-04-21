@@ -1,0 +1,800 @@
+package com.leekleak.trafficlight.ui.overview
+
+import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.maxLength
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.getSelectedDate
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberSearchBarState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.toPath
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.copy
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.leekleak.trafficlight.R
+import com.leekleak.trafficlight.charts.GraphTheme.wifiShape
+import com.leekleak.trafficlight.database.DataPlan
+import com.leekleak.trafficlight.database.DataPlanDao
+import com.leekleak.trafficlight.database.TimeInterval
+import com.leekleak.trafficlight.model.AppManager
+import com.leekleak.trafficlight.model.DataUID
+import com.leekleak.trafficlight.ui.navigation.Navigator
+import com.leekleak.trafficlight.ui.theme.backgrounds
+import com.leekleak.trafficlight.ui.theme.card
+import com.leekleak.trafficlight.ui.theme.doHyeonFont
+import com.leekleak.trafficlight.ui.theme.robotoFlex
+import com.leekleak.trafficlight.util.DataSize
+import com.leekleak.trafficlight.util.DataSizeUnit
+import com.leekleak.trafficlight.util.PageTitle
+import com.leekleak.trafficlight.util.categoryTitleSmall
+import com.leekleak.trafficlight.util.fromTimestamp
+import com.leekleak.trafficlight.util.px
+import com.leekleak.trafficlight.util.toDp
+import com.leekleak.trafficlight.util.toTimestamp
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.Locale
+import kotlin.math.E
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.roundToInt
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@SuppressLint("LocalContextGetResourceValueCall")
+@Composable
+fun PlanConfig(
+    subscriberId: String,
+) {
+    val viewModel: OverviewVM = koinViewModel()
+    val appManager: AppManager = koinInject()
+    val dataPlanDao: DataPlanDao = koinInject()
+    val scope = rememberCoroutineScope()
+    val navigator: Navigator = koinInject()
+
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+
+    val currentPlan by remember { viewModel.getDataPlan(subscriberId) }.collectAsState(DataPlan(subscriberId))
+    var newPlan by remember { mutableStateOf(DataPlan(subscriberId, uiBackground = 3)) }
+    LaunchedEffect(currentPlan) {
+        newPlan = currentPlan
+    }
+
+    Scaffold(
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                ExtendedFloatingActionButton (
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            dataPlanDao.add(newPlan)
+                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            navigator.goBack()
+                        }
+                    }
+                ) {
+                    Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(
+                            painter = painterResource(R.drawable.save),
+                            contentDescription = null
+                        )
+                        Text(stringResource(R.string.save))
+                    }
+                }
+            }
+        }
+    ) { paddingValues ->
+        val hazeState = rememberHazeState()
+        LazyColumn(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxSize()
+                .hazeSource(hazeState),
+            contentPadding = paddingValues
+        ) {
+            item {
+                val size by remember { derivedStateOf {
+                    DataSize(currentPlan.dataMax.toDouble()).getAsUnit(DataSizeUnit.GB)
+                } }
+                PlanSizeConfig (size = size) {
+                    val data = DataSize(it.toDouble(), unit = DataSizeUnit.GB)
+                    newPlan = newPlan.copy(dataMax = data.getBitValue())
+                }
+            }
+            categoryTitleSmall { stringResource(R.string.type) }
+            item {
+                Column(
+                    modifier = Modifier
+                        .card()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    val interval by remember { derivedStateOf { newPlan.interval } }
+                    ButtonGroup(
+                        modifier = Modifier.fillMaxWidth(),
+                        expandedRatio = 0.05f,
+                        overflowIndicator = {}
+                    ) {
+                        toggleableItem(
+                            checked = interval == TimeInterval.MONTH,
+                            label = context.getString(R.string.monthly),
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.calendar),
+                                    contentDescription = null
+                                )
+                            },
+                            onCheckedChange = {
+                                newPlan = newPlan.copy(interval = TimeInterval.MONTH)
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            },
+                            weight = 1f,
+                        )
+                        toggleableItem(
+                            checked = interval == TimeInterval.DAY,
+                            label = context.getString(R.string.custom),
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.custom),
+                                    contentDescription = null
+                                )
+                            },
+                            onCheckedChange = {
+                                newPlan = newPlan.copy(interval = TimeInterval.DAY)
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            },
+                            weight = 1f,
+                        )
+                    }
+
+                    var selectedMonthDay by remember(newPlan) {
+                        mutableIntStateOf(fromTimestamp(newPlan.startDate).dayOfMonth)
+                    }
+                    AnimatedContent(interval) { currentInterval ->
+                        if (currentInterval == TimeInterval.MONTH) {
+                            Column {
+                                Text(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp),
+                                    text = stringResource(R.string.resets_on, selectedMonthDay),
+                                    fontSize = 18.sp,
+                                    fontFamily = robotoFlex(0f, 150f, 1000f),
+                                    textAlign = TextAlign.Center,
+                                )
+                                Slider(
+                                    value = selectedMonthDay.toFloat(),
+                                    onValueChange = {
+                                        val newDate = LocalDate.now().withDayOfMonth(it.roundToInt()).atStartOfDay().toTimestamp()
+                                        if (newDate != newPlan.startDate) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                            newPlan = newPlan.copy(startDate = newDate)
+                                        }
+                                    },
+                                    enabled = true,
+                                    valueRange = 1f..28f,
+                                    steps = 26
+                                )
+                            }
+                        } else {
+                            CustomPlanSetup(
+                                newPlan = newPlan,
+                                onChange = { date, time, multiplier ->
+                                    newPlan = newPlan.copy(
+                                        startDate = date.atStartOfDay().toTimestamp() + time.toSecondOfDay() * 1000,
+                                        intervalMultiplier = multiplier
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            categoryTitleSmall { stringResource(R.string.zero_rated_apps) }
+            item {
+                val suspiciousApps by remember { appManager.allAppsFlow }.collectAsState(emptyList())
+
+                val excludedApps by remember { derivedStateOf {
+                    suspiciousApps.filter { newPlan.excludedApps.contains(it.uid) }
+                } }
+                val includedApps by remember { derivedStateOf {
+                    suspiciousApps.filter { !newPlan.excludedApps.contains(it.uid) }
+                } }
+
+                Column(
+                    modifier = Modifier
+                        .card()
+                        .padding(vertical = 8.dp),
+                ) {
+                    var addApps by remember { mutableStateOf(false) }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateContentSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val brush = Brush.horizontalGradient(0.95f to Color.Black, 1f to Color.Transparent)
+                        AppSelector(
+                            uids = excludedApps,
+                            modifier = Modifier
+                                .weight(1f)
+                                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                                .drawWithContent {
+                                    drawContent()
+                                    drawRect(brush = brush, blendMode = BlendMode.DstIn)
+                                }
+                        ) { uid ->
+                            newPlan = newPlan.copy(excludedApps = newPlan.excludedApps.filter { it != uid })
+                        }
+                        FilledIconButton (
+                            modifier = Modifier.padding(end = 8.dp),
+                            onClick = {
+                                addApps = !addApps
+                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.add),
+                                contentDescription = null
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(addApps, modifier = Modifier.fillMaxWidth()) {
+                        val searchBarState = rememberSearchBarState()
+                        var query by remember { mutableStateOf("") }
+                        val searchResults by remember { derivedStateOf {
+                            if (query.isEmpty()) includedApps.sortedByDescending { specialApps.indexOf(it.packageName) }
+                            else includedApps.filter { it.getName(context).lowercase().contains(query.lowercase()) }
+                        } }
+
+                        Column(
+                            modifier = Modifier.padding(top = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            HorizontalDivider()
+                            AppSelector(searchResults) { uid ->
+                                newPlan = newPlan.copy(excludedApps = newPlan.excludedApps + (includedApps.map { it.uid }.filter { it == uid }))
+                            }
+                            SearchBar(
+                                state = searchBarState,
+                                inputField = { SearchBarDefaults.InputField(
+                                    query = query,
+                                    onQueryChange = {query = it},
+                                    onSearch = {},
+                                    expanded = false,
+                                    onExpandedChange = {},
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.search),
+                                            contentDescription = null
+                                        )
+                                    }
+                                )}
+                            )
+                        }
+                    }
+
+                }
+            }
+            categoryTitleSmall { stringResource(R.string.background) }
+            item {
+                LazyRow(
+                    modifier = Modifier.card(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(backgrounds.size) { i ->
+                        BackgroundSelector(i, newPlan) {
+                            newPlan = newPlan.copy(uiBackground = i)
+                        }
+                    }
+                }
+            }
+        }
+        PageTitle (true, hazeState, stringResource(R.string.configure_plan))
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun CustomPlanSetup(newPlan: DataPlan, onChange: (date:LocalDate, time: LocalTime, multiplier: Int) -> Unit) {
+    var selectedDate by remember { mutableStateOf(fromTimestamp(newPlan.startDate).toLocalDate()) }
+    var selectedTime by remember { mutableStateOf(fromTimestamp(newPlan.startDate).toLocalTime()) }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = newPlan.startDate,
+        selectableDates = PastOrPresentSelectableDates
+    )
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = selectedTime.hour,
+        initialMinute = selectedTime.minute,
+    )
+
+    val textFieldState = rememberTextFieldState((newPlan.intervalMultiplier).toString())
+    var datePickerVisible by remember { mutableStateOf(false) }
+    var timePickerVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedDate, selectedTime, textFieldState.text) {
+        val multiplier = max(textFieldState.text.toString().toIntOrNull() ?: 1, 1)
+        onChange(selectedDate, selectedTime, multiplier)
+    }
+
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        item {
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(painterResource(R.drawable.day), null)
+                    Text(stringResource(R.string.day))
+                }
+                Button(
+                    shape = MaterialTheme.shapes.medium,
+                    onClick = { datePickerVisible = true }
+                ) {
+                    Text(
+                        text = selectedDate.toString(),
+                        fontFamily = robotoFlex(0f, 150f, 1000f),
+                    )
+                }
+            }
+        }
+        item {
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(painterResource(R.drawable.clock), null)
+                    Text(stringResource(R.string.time))
+                }
+                Button(
+                    shape = MaterialTheme.shapes.medium,
+                    onClick = { timePickerVisible = true }
+                ) {
+                    Text(
+                        text = selectedTime.toString(),
+                        fontFamily = robotoFlex(0f, 150f, 1000f),
+                    )
+                }
+            }
+        }
+        item {
+            Column(
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(painterResource(R.drawable.length), null)
+                    Text(stringResource(R.string.length))
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
+                ) {
+                    BasicTextField(
+                        modifier = Modifier.width(IntrinsicSize.Min),
+                        state = textFieldState,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        inputTransformation = InputTransformation.maxLength(3),
+                        textStyle = TextStyle(
+                            fontFamily = robotoFlex(0f, 150f, 1000f),
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimary),
+                    )
+                    Text(
+                        text = stringResource(R.string.days),
+                        fontFamily = robotoFlex(0f, 150f, 1000f),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+    }
+    if (datePickerVisible) {
+        DatePickerDialog(
+            onDismissRequest = { datePickerVisible = false },
+            confirmButton = {
+                Button(
+                    enabled = datePickerState.getSelectedDate()?.let { it <= LocalDate.now() }
+                        ?: false,
+                    onClick = {
+                        datePickerVisible = false
+                        selectedDate = datePickerState.getSelectedDate()
+                    }
+                ) {
+                    Text(stringResource(R.string.save))
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            )
+        }
+    } else if (timePickerVisible) {
+        TimePickerDialog(
+            onDismissRequest = { timePickerVisible = false },
+            title = {},
+            confirmButton = {
+                Button(
+                    onClick = {
+                        timePickerVisible = false
+                        selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    }
+                ) {
+                    Text(stringResource(R.string.save))
+                }
+            }
+        ) {
+            TimePicker(timePickerState)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppSelector(
+    uids: List<DataUID>,
+    modifier: Modifier = Modifier,
+    onClick: (uid: Int) -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
+
+    LazyRow(modifier, contentPadding = PaddingValues(horizontal = 8.dp)) {
+        item ("holder") {  }
+        items(uids, {it.uid}) {
+            TooltipBox(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.medium)
+                    .clickable {
+                        onClick(it.uid)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    .padding(4.dp),
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above,
+                    4.dp
+                ),
+                tooltip = {
+                    PlainTooltip { Text(it.getName(context)) }
+                },
+                state = rememberTooltipState(),
+            ) {
+                Column(
+                    Modifier.width(64.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    it.GetIcon(Modifier.size(52.dp))
+                    Text(
+                        text = it.getName(context),
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+        if (uids.isEmpty()) {
+            item {
+                Text(
+                    modifier = Modifier.padding(start = 8.dp),
+                    text = stringResource(R.string.no_apps),
+                    fontFamily = robotoFlex(0f, 151f, 1000f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BackgroundSelector(i: Int, newPlan: DataPlan, onClick: () -> Unit) {
+    val haptic = LocalHapticFeedback.current
+    Box(
+        modifier = Modifier
+            .width(192.dp)
+            .height(128.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.background)
+            .border(1.dp, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.medium)
+            .clickable {
+                onClick()
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+            },
+    ) {
+        backgrounds[i]?.let {
+            Image(
+                modifier = Modifier
+                    .matchParentSize()
+                    .graphicsLayer(scaleX = 1.2f, scaleY = 1.2f),
+                painter = painterResource(it),
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryContainer)
+            )
+        }
+        AnimatedVisibility(
+            modifier = Modifier
+                .padding(8.dp)
+                .align(Alignment.TopEnd),
+            visible = newPlan.uiBackground == i,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut()
+        ) {
+            Icon (
+                painter = painterResource(R.drawable.checkmark),
+                contentDescription = stringResource(R.string.selected),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun PlanSizeConfig(size: Double, onSizeUpdate: (Float) -> Unit) {
+    Box(
+        modifier = Modifier
+            .padding(top = 40.dp)
+            .height(128.dp * 2.5f)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        val shape = wifiShape().toPath()
+        val shapeSizeBase = 128.dp.px
+        val shapeColor = MaterialTheme.colorScheme.primaryContainer
+        val scale = remember { Animatable(0f) }
+
+        val shapeTransformed = remember(scale.value) {
+            val sizePx = shapeSizeBase * (1 + scale.value)
+            val matrix = Matrix().apply {
+                scale(sizePx, sizePx)
+            }
+            shape.copy().apply { transform(matrix) }
+        }
+
+        val formatter = remember { DecimalFormat("0.#") }
+        val numberFormat = NumberFormat.getInstance(Locale.US)
+        val fieldState = remember(size) {
+            TextFieldState(formatter.format(size))
+        }
+
+        LaunchedEffect(fieldState.text) {
+            val number = numberFormat.parse(fieldState.text.toString())
+            if (number != null) {
+                onSizeUpdate(number.toFloat())
+                scale.animateTo(
+                    targetValue = (1.5 * (1 - E.pow(-number.toFloat() * 0.1))).toFloat(),
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .size(128.dp * (1 + scale.value))
+                .drawWithCache {
+                    onDrawBehind {
+                        rotate(scale.value * 60f) {
+                            drawPath(
+                                path = shapeTransformed,
+                                color = shapeColor,
+                            )
+                        }
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally)
+            ) {
+                var intrinsics by remember { mutableIntStateOf(0) }
+                BasicTextField(
+                    state = fieldState,
+                    modifier = Modifier.width (intrinsics.toDp).alignByBaseline(),
+                    inputTransformation =  InputTransformation {
+                        val newText = asCharSequence().toString()
+                        if (newText.isEmpty()) {
+                            replace(0, length, "0")
+                        } else if (newText.length > 1 && newText.startsWith("0") && !newText.contains(".")) {
+                            replace(0, 1, "")
+                        }
+                    }.maxLength(5),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    textStyle = TextStyle(
+                        fontFamily = doHyeonFont(),
+                        fontSize = 40.sp * (1 + scale.value/2),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        textAlign = TextAlign.End,
+                    ),
+                    onTextLayout = { out ->
+                        val right = out()?.getLineRight(0)?.toInt()
+                        val left = out()?.getLineLeft(0)?.toInt()
+                        intrinsics = if (right != null && left != null) { right - left } else 0
+                    },
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.surface),
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                )
+                Text(
+                    modifier = Modifier.alignByBaseline(),
+                    fontFamily = doHyeonFont(),
+                    fontSize = 30.sp * (1 + scale.value/2),
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    text = "GB"
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Apps most often included as zero-rated.
+ *
+ * The further down the list the app, the higher it will be placed when sorted.
+ */
+val specialApps = listOf(
+    "com.amazon.avod.thirdpartyclient", // Prime Video
+    "org.telegram.messenger",
+    "com.microsoft.teams",
+    "us.zoom.videomeetings",
+    "com.waze",
+    "com.google.android.apps.maps",
+    "com.apple.android.music",
+    "com.netflix.mediaclient",
+    "com.ss.android.ugc.trill", // TikTok
+    "com.google.android.youtube",
+    "com.spotify.music",
+    "com.snapchat.android",
+    "com.twitter.android",
+    "com.instagram.android",
+    "com.facebook.orca", // Facebook Messenger
+    "com.facebook.katana", // Facebook
+    "com.whatsapp",
+)
+
+object PastOrPresentSelectableDates: SelectableDates {
+    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+        return utcTimeMillis <= System.currentTimeMillis()
+    }
+
+    override fun isSelectableYear(year: Int): Boolean {
+        return year <= LocalDate.now().year
+    }
+}
