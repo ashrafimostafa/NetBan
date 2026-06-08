@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.navigation.Navigator
+import com.leekleak.trafficlight.ui.navigation.IpLookupTool
 import com.leekleak.trafficlight.ui.navigation.PingTool
 import com.leekleak.trafficlight.ui.navigation.WhoisTool
 import com.leekleak.trafficlight.util.PageTitle
@@ -65,6 +66,22 @@ fun NetworkUtilsHome(paddingValues: PaddingValues) {
                     description = stringResource(R.string.whois_tile_description),
                     icon = painterResource(R.drawable.query_stats),
                     onClick = { navigator.goTo(WhoisTool) },
+                )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                NetworkUtilTile(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(R.string.ip_lookup),
+                    description = stringResource(R.string.ip_lookup_tile_description),
+                    icon = painterResource(R.drawable.cellular),
+                    onClick = { navigator.goTo(IpLookupTool) },
                 )
             }
         }

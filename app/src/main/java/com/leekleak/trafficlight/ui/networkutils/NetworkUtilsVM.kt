@@ -3,6 +3,8 @@ package com.leekleak.trafficlight.ui.networkutils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leekleak.trafficlight.database.PingBookmarkRepo
+import com.leekleak.trafficlight.model.IpLookupManager
+import com.leekleak.trafficlight.model.IpLookupResult
 import com.leekleak.trafficlight.model.PingManager
 import com.leekleak.trafficlight.model.PingReply
 import com.leekleak.trafficlight.model.PingResult
@@ -31,9 +33,17 @@ data class WhoisUiState(
     val error: String? = null,
 )
 
+data class IpLookupUiState(
+    val ip: String = "",
+    val isRunning: Boolean = false,
+    val result: IpLookupResult? = null,
+    val error: String? = null,
+)
+
 class NetworkUtilsVM(
     private val pingManager: PingManager,
     private val whoisManager: WhoisManager,
+    private val ipLookupManager: IpLookupManager,
     private val pingBookmarkRepo: PingBookmarkRepo,
 ) : ViewModel() {
 
@@ -54,8 +64,12 @@ class NetworkUtilsVM(
     private val _whoisState = MutableStateFlow(WhoisUiState())
     val whoisState: StateFlow<WhoisUiState> = _whoisState.asStateFlow()
 
+    private val _ipLookupState = MutableStateFlow(IpLookupUiState())
+    val ipLookupState: StateFlow<IpLookupUiState> = _ipLookupState.asStateFlow()
+
     private var pingJob: Job? = null
     private var whoisJob: Job? = null
+    private var ipLookupJob: Job? = null
 
     fun setHost(host: String) {
         _pingState.update { it.copy(host = host) }
@@ -166,5 +180,45 @@ class NetworkUtilsVM(
     fun clearWhois() {
         stopWhois()
         _whoisState.value = WhoisUiState(domain = _whoisState.value.domain)
+    }
+
+    fun setIpLookupAddress(ip: String) {
+        _ipLookupState.update { it.copy(ip = ip) }
+    }
+
+    fun lookupIp() {
+        val ip = _ipLookupState.value.ip.trim()
+        if (ip.isBlank() || _ipLookupState.value.isRunning) return
+
+        ipLookupJob?.cancel()
+        ipLookupJob = viewModelScope.launch {
+            _ipLookupState.update { IpLookupUiState(ip = ip, isRunning = true) }
+            try {
+                val result = ipLookupManager.lookup(ip)
+                _ipLookupState.update {
+                    IpLookupUiState(
+                        ip = result.ip,
+                        isRunning = false,
+                        result = result.takeIf { it.error == null },
+                        error = result.error,
+                    )
+                }
+            } catch (_: Exception) {
+                _ipLookupState.update { state ->
+                    state.copy(isRunning = false, error = "lookup_failed")
+                }
+            }
+        }
+    }
+
+    fun stopIpLookup() {
+        ipLookupJob?.cancel()
+        ipLookupJob = null
+        _ipLookupState.update { it.copy(isRunning = false) }
+    }
+
+    fun clearIpLookup() {
+        stopIpLookup()
+        _ipLookupState.value = IpLookupUiState(ip = _ipLookupState.value.ip)
     }
 }

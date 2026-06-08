@@ -39,3 +39,6 @@ data object PingTool : NavKey
 
 @Serializable
 data object WhoisTool : NavKey
+
+@Serializable
+data object IpLookupTool : NavKey
