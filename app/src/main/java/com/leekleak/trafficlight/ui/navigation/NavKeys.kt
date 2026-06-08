@@ -33,3 +33,9 @@ data object NotificationSettings : NavKey
 
 @Serializable
 data object NetworkUtils : NavKey
+
+@Serializable
+data object PingTool : NavKey
+
+@Serializable
+data object WhoisTool : NavKey

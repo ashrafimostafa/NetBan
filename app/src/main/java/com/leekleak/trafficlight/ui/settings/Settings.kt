@@ -38,7 +38,6 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.AppPreferenceRepo
 import com.leekleak.trafficlight.model.PermissionManager
 import com.leekleak.trafficlight.ui.navigation.Navigator
-import com.leekleak.trafficlight.ui.navigation.NetworkUtils
 import com.leekleak.trafficlight.ui.navigation.NotificationSettings
 import com.leekleak.trafficlight.ui.theme.Theme
 import com.leekleak.trafficlight.ui.theme.card
@@ -156,16 +155,6 @@ fun Settings(paddingValues: PaddingValues) {
                 },
             )
         }*/
-
-        categoryTitleSmall { stringResource(R.string.network_utils) }
-        item {
-            NavigatePreference(
-                title = stringResource(R.string.network_utils),
-                summary = stringResource(R.string.network_utils_description),
-                icon = painterResource(R.drawable.query_stats),
-                onClick = { navigator.goTo(NetworkUtils) },
-            )
-        }
 
         categoryTitleSmall { stringResource(R.string.ui) }
         item {

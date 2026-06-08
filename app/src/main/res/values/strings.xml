@@ -105,7 +105,9 @@
     <string name="reset">بازنشانی</string>
     <string name="live_notification">نوتیفیکیشن به‌لحظه</string>
     <string name="network_utils">ابزارهای شبکه</string>
-    <string name="network_utils_description">پینگ، و ابزارهای دیگر شبکه</string>
+    <string name="network_utils_description">ابزارهای تشخیص و بررسی شبکه</string>
+    <string name="ping_tile_description">بررسی اتصال و تأخیر</string>
+    <string name="whois_tile_description">اطلاعات ثبت دامنه</string>
     <string name="ping">پینگ</string>
     <string name="ping_host_hint">آدرس یا IP</string>
     <string name="ping_start">شروع پینگ</string>

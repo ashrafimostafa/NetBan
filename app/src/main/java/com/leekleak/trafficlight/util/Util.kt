@@ -100,6 +100,12 @@ fun DayOfWeek.getName(style: TextStyle) =
 fun Month.getName(style: TextStyle) =
     this.getDisplayName(style, Locale.getDefault()).replaceFirstChar(Char::titlecase)
 
+/** Content top inset below [PageTitle] on main tabs (no back button). */
+val MainPageTitleInset = 40.dp
+
+/** Content top inset below [PageTitle] on sub-screens (with back button). */
+val SubPageTitleInset = 58.dp
+
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun PageTitle(

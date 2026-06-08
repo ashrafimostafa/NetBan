@@ -52,11 +52,15 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.history.History
 import com.leekleak.trafficlight.ui.overview.Overview
 import com.leekleak.trafficlight.ui.overview.PlanConfig
-import com.leekleak.trafficlight.ui.networkutils.NetworkUtilsScreen
+import com.leekleak.trafficlight.ui.networkutils.NetworkUtilsHome
+import com.leekleak.trafficlight.ui.networkutils.PingScreen
+import com.leekleak.trafficlight.ui.networkutils.WhoisScreen
 import com.leekleak.trafficlight.ui.settings.NotificationSettings
 import com.leekleak.trafficlight.ui.settings.Settings
 import com.leekleak.trafficlight.ui.settings.UsagePermissionRequest
 import com.leekleak.trafficlight.ui.theme.navBarShadow
+import com.leekleak.trafficlight.util.MainPageTitleInset
+import com.leekleak.trafficlight.util.SubPageTitleInset
 import com.leekleak.trafficlight.util.WideScreenWrapper
 import org.koin.compose.koinInject
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -80,11 +84,12 @@ fun NavigationManager() {
 
     val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val titleInset = if (showBottomBar) MainPageTitleInset else SubPageTitleInset
     val paddingValues =
         PaddingValues(
             start = 16.dp,
             end = 16.dp,
-            top = topPadding + 40.dp,
+            top = topPadding + titleInset,
             bottom = bottomPadding + if (showBottomBar) toolbarOffset else 8.dp
         )
 
@@ -128,7 +133,9 @@ fun NavigationManager() {
                     entry<UsagePermissionRequest> { UsagePermissionRequest(paddingValues) }
                     entry<PlanConfig> { PlanConfig(it.subscriberId) }
                     entry<NotificationSettings> { NotificationSettings(paddingValues) }
-                    entry<NetworkUtils> { NetworkUtilsScreen(paddingValues) }
+                    entry<NetworkUtils> { NetworkUtilsHome(paddingValues) }
+                    entry<PingTool> { PingScreen(paddingValues) }
+                    entry<WhoisTool> { WhoisScreen(paddingValues) }
                 },
                 transitionSpec = {
                     if (backStack.size == 1) fadeIn() togetherWith fadeOut()

@@ -58,6 +58,7 @@ import com.leekleak.trafficlight.database.DataPlanDao
 import com.leekleak.trafficlight.model.NetworkUsageManager
 import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.navigation.PlanConfig
+import com.leekleak.trafficlight.ui.navigation.NetworkUtils
 import com.leekleak.trafficlight.ui.navigation.Settings
 import com.leekleak.trafficlight.ui.settings.PermissionButton
 import com.leekleak.trafficlight.ui.settings.PermissionCard
@@ -157,14 +158,22 @@ fun Overview(
         }
     }
     PageTitle(false, hazeState, stringResource(R.string.today)) {
-        IconButton(
+        Row(
             modifier = Modifier.align(Alignment.CenterEnd),
-            onClick = { navigator.goTo(Settings) }
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Icon(
-                painterResource(R.drawable.settings),
-                contentDescription = stringResource(R.string.settings)
-            )
+            IconButton(onClick = { navigator.goTo(NetworkUtils) }) {
+                Icon(
+                    painterResource(R.drawable.query_stats),
+                    contentDescription = stringResource(R.string.network_utils),
+                )
+            }
+            IconButton(onClick = { navigator.goTo(Settings) }) {
+                Icon(
+                    painterResource(R.drawable.settings),
+                    contentDescription = stringResource(R.string.settings),
+                )
+            }
         }
     }
 }
