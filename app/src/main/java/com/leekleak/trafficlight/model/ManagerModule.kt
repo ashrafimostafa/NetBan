@@ -9,5 +9,6 @@ val managerModule = module {
     single { PermissionManager(androidContext()) }
     single { NetworkUsageManager(get(), get(), get()) }
     single { PingManager() }
+    single { WhoisManager() }
     factory { AppIconFetcher.Factory(get()) }
 }

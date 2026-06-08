@@ -20,5 +20,5 @@ val viewModelModule = module {
     }
     viewModel { SettingsVM(get()) }
     viewModel { OverviewVM(get()) }
-    viewModel { NetworkUtilsVM(get(), get()) }
+    viewModel { NetworkUtilsVM(get(), get(), get()) }
 }

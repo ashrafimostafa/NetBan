@@ -45,6 +45,7 @@ import java.util.Locale
 fun NetworkUtilsScreen(paddingValues: PaddingValues) {
     val viewModel: NetworkUtilsVM = koinViewModel()
     val pingState by viewModel.pingState.collectAsState()
+    val whoisState by viewModel.whoisState.collectAsState()
     val bookmarks by viewModel.bookmarks.collectAsState()
     val isBookmarked by viewModel.isCurrentHostBookmarked.collectAsState()
     val hazeState = rememberHazeState()
@@ -170,6 +171,80 @@ fun NetworkUtilsScreen(paddingValues: PaddingValues) {
         pingState.result?.let { result ->
             item {
                 PingSummaryCard(result)
+            }
+        }
+
+        categoryTitleSmall { stringResource(R.string.whois) }
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .card()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = whoisState.domain,
+                    onValueChange = { viewModel.setWhoisDomain(it) },
+                    label = { Text(stringResource(R.string.whois_domain_hint)) },
+                    singleLine = true,
+                    enabled = !whoisState.isRunning,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (whoisState.isRunning) {
+                        FilledTonalButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.stopWhois() },
+                        ) {
+                            Text(stringResource(R.string.stop))
+                        }
+                    } else {
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.lookupWhois() },
+                            enabled = whoisState.domain.isNotBlank(),
+                        ) {
+                            Text(stringResource(R.string.whois_lookup))
+                        }
+                    }
+                    if (whoisState.result != null || whoisState.error != null) {
+                        FilledTonalButton(
+                            onClick = { viewModel.clearWhois() },
+                            enabled = !whoisState.isRunning,
+                            colors = ButtonDefaults.filledTonalButtonColors(),
+                        ) {
+                            Text(stringResource(R.string.clear))
+                        }
+                    }
+                }
+            }
+        }
+
+        if (whoisState.isRunning && whoisState.result == null && whoisState.error == null) {
+            item {
+                Text(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    text = stringResource(R.string.whois_running, whoisState.domain),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+
+        if (whoisState.error != null) {
+            item {
+                WhoisErrorCard(whoisState.error!!)
+            }
+        }
+
+        whoisState.result?.let { text ->
+            categoryTitleSmall { stringResource(R.string.whois_result) }
+            item {
+                WhoisResultCard(text)
             }
         }
     }
@@ -302,6 +377,46 @@ private fun PingSummaryCard(result: PingResult) {
                 value = stringResource(R.string.ping_time_ms, String.format(Locale.US, "%.1f", it)),
             )
         }
+    }
+}
+
+@Composable
+private fun WhoisErrorCard(errorKey: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .card()
+            .padding(16.dp),
+    ) {
+        Text(
+            text = when (errorKey) {
+                "invalid_domain" -> stringResource(R.string.whois_error_invalid_domain)
+                "whois_server_not_found" -> stringResource(R.string.whois_error_server_not_found)
+                "whois_empty" -> stringResource(R.string.whois_error_empty)
+                "whois_failed" -> stringResource(R.string.whois_error_failed)
+                else -> errorKey
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
+@Composable
+private fun WhoisResultCard(text: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .card()
+            .padding(16.dp),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            fontFamily = jetbrainsMono(),
+        )
     }
 }
 

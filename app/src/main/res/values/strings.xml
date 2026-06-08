@@ -129,6 +129,15 @@
     <string name="ping_remove_bookmark">حذف نشانک</string>
     <string name="ping_no_bookmarks">هنوز نشانکی ذخیره نشده است</string>
     <string name="ping_bookmark">پینگ</string>
+    <string name="whois">WHOIS</string>
+    <string name="whois_domain_hint">دامنه</string>
+    <string name="whois_lookup">جستجوی WHOIS</string>
+    <string name="whois_running">در حال دریافت اطلاعات %1$s…</string>
+    <string name="whois_result">نتیجه WHOIS</string>
+    <string name="whois_error_invalid_domain">دامنه وارد شده معتبر نیست</string>
+    <string name="whois_error_server_not_found">سرور WHOIS برای این دامنه پیدا نشد</string>
+    <string name="whois_error_empty">اطلاعاتی دریافت نشد</string>
+    <string name="whois_error_failed">جستجوی WHOIS ناموفق بود</string>
     <plurals name="resets_in_days">
         <item quantity="one">فردا بازنشانی می‌شود</item>
         <item quantity="other">در %d روز بازنشانی می‌شود</item>
