@@ -328,7 +328,7 @@ class UsageService : Service() {
         val channel = if (networkAvailable) NOTIFICATION_CHANNEL_ID else NOTIFICATION_CHANNEL_ID_SILENT
         notificationBuilder = NotificationCompat.Builder(this, channel)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Traffic Light")
+            .setContentTitle("NetBan")
             .setOngoing(true)
             .setRequestPromotedOngoing(liveNotification)
             .setSilent(true)
