@@ -42,3 +42,6 @@ data object WhoisTool : NavKey
 
 @Serializable
 data object IpLookupTool : NavKey
+
+@Serializable
+data object MyNetworkTool : NavKey

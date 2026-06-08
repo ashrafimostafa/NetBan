@@ -5,10 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.leekleak.trafficlight.database.PingBookmarkRepo
 import com.leekleak.trafficlight.model.IpLookupManager
 import com.leekleak.trafficlight.model.IpLookupResult
+import com.leekleak.trafficlight.model.MyNetworkInfo
+import com.leekleak.trafficlight.model.MyNetworkManager
 import com.leekleak.trafficlight.model.PingManager
 import com.leekleak.trafficlight.model.PingReply
 import com.leekleak.trafficlight.model.PingResult
 import com.leekleak.trafficlight.model.WhoisManager
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,10 +43,17 @@ data class IpLookupUiState(
     val error: String? = null,
 )
 
+data class MyNetworkUiState(
+    val isLoading: Boolean = false,
+    val info: MyNetworkInfo? = null,
+    val error: String? = null,
+)
+
 class NetworkUtilsVM(
     private val pingManager: PingManager,
     private val whoisManager: WhoisManager,
     private val ipLookupManager: IpLookupManager,
+    private val myNetworkManager: MyNetworkManager,
     private val pingBookmarkRepo: PingBookmarkRepo,
 ) : ViewModel() {
 
@@ -67,9 +77,13 @@ class NetworkUtilsVM(
     private val _ipLookupState = MutableStateFlow(IpLookupUiState())
     val ipLookupState: StateFlow<IpLookupUiState> = _ipLookupState.asStateFlow()
 
+    private val _myNetworkState = MutableStateFlow(MyNetworkUiState())
+    val myNetworkState: StateFlow<MyNetworkUiState> = _myNetworkState.asStateFlow()
+
     private var pingJob: Job? = null
     private var whoisJob: Job? = null
     private var ipLookupJob: Job? = null
+    private var myNetworkJob: Job? = null
 
     fun setHost(host: String) {
         _pingState.update { it.copy(host = host) }
@@ -220,5 +234,26 @@ class NetworkUtilsVM(
     fun clearIpLookup() {
         stopIpLookup()
         _ipLookupState.value = IpLookupUiState(ip = _ipLookupState.value.ip)
+    }
+
+    fun refreshMyNetwork() {
+        if (_myNetworkState.value.isLoading) return
+
+        myNetworkJob?.cancel()
+        myNetworkJob = viewModelScope.launch {
+            _myNetworkState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val info = myNetworkManager.gather()
+                _myNetworkState.update {
+                    MyNetworkUiState(isLoading = false, info = info)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _myNetworkState.update {
+                    it.copy(isLoading = false, error = "refresh_failed")
+                }
+            }
+        }
     }
 }

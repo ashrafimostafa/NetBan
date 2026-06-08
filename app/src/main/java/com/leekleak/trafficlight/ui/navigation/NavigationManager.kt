@@ -53,6 +53,7 @@ import com.leekleak.trafficlight.ui.history.History
 import com.leekleak.trafficlight.ui.overview.Overview
 import com.leekleak.trafficlight.ui.overview.PlanConfig
 import com.leekleak.trafficlight.ui.networkutils.IpLookupScreen
+import com.leekleak.trafficlight.ui.networkutils.MyNetworkScreen
 import com.leekleak.trafficlight.ui.networkutils.NetworkUtilsHome
 import com.leekleak.trafficlight.ui.networkutils.PingScreen
 import com.leekleak.trafficlight.ui.networkutils.WhoisScreen
@@ -138,6 +139,7 @@ fun NavigationManager() {
                     entry<PingTool> { PingScreen(paddingValues) }
                     entry<WhoisTool> { WhoisScreen(paddingValues) }
                     entry<IpLookupTool> { IpLookupScreen(paddingValues) }
+                    entry<MyNetworkTool> { MyNetworkScreen(paddingValues) }
                 },
                 transitionSpec = {
                     if (backStack.size == 1) fadeIn() togetherWith fadeOut()

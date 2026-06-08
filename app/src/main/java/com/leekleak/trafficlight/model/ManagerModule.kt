@@ -11,5 +11,6 @@ val managerModule = module {
     single { PingManager() }
     single { WhoisManager() }
     single { IpLookupManager() }
+    single { MyNetworkManager(get(), get(), get()) }
     factory { AppIconFetcher.Factory(get()) }
 }

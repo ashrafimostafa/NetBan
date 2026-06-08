@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,19 +19,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
-import com.leekleak.trafficlight.model.IpLookupResult
-import com.leekleak.trafficlight.ui.theme.jetbrainsMono
 import com.leekleak.trafficlight.util.PageTitle
 import com.leekleak.trafficlight.util.categoryTitleSmall
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import org.koin.androidx.compose.koinViewModel
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -150,119 +145,6 @@ private fun IpLookupErrorCard(errorKey: String) {
             },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onErrorContainer,
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun IpLookupResultCard(result: IpLookupResult) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.largeIncreased,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                result.flagEmoji?.let {
-                    Text(text = it, style = MaterialTheme.typography.headlineMedium)
-                }
-                Column {
-                    Text(
-                        text = result.ip,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontFamily = jetbrainsMono(),
-                    )
-                    result.type?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
-
-            IpLookupSection(stringResource(R.string.ip_lookup_location)) {
-                result.country?.let { country ->
-                    val code = result.countryCode?.let { " ($it)" }.orEmpty()
-                    IpLookupRow(stringResource(R.string.ip_lookup_country), "$country$code")
-                }
-                result.continent?.let {
-                    IpLookupRow(stringResource(R.string.ip_lookup_continent), it)
-                }
-                result.region?.let {
-                    IpLookupRow(stringResource(R.string.ip_lookup_region), it)
-                }
-                result.city?.let {
-                    IpLookupRow(stringResource(R.string.ip_lookup_city), it)
-                }
-                if (result.latitude != null && result.longitude != null) {
-                    IpLookupRow(
-                        label = stringResource(R.string.ip_lookup_coordinates),
-                        value = String.format(
-                            Locale.US,
-                            "%.4f, %.4f",
-                            result.latitude,
-                            result.longitude,
-                        ),
-                    )
-                }
-            }
-
-            IpLookupSection(stringResource(R.string.ip_lookup_network)) {
-                result.isp?.let { IpLookupRow(stringResource(R.string.ip_lookup_isp), it) }
-                result.org?.let { IpLookupRow(stringResource(R.string.ip_lookup_org), it) }
-                result.asn?.let { IpLookupRow(stringResource(R.string.ip_lookup_asn), it) }
-            }
-
-            result.timezone?.let {
-                IpLookupSection(stringResource(R.string.ip_lookup_other)) {
-                    IpLookupRow(stringResource(R.string.ip_lookup_timezone), it)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun IpLookupSection(title: String, content: @Composable () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        content()
-    }
-}
-
-@Composable
-private fun IpLookupRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top,
-    ) {
-        Text(
-            modifier = Modifier.weight(0.4f),
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            modifier = Modifier.weight(0.6f),
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

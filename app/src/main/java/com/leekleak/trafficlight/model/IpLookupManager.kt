@@ -54,6 +54,21 @@ private data class IpTimezone(val id: String? = null)
 @Serializable
 private data class IpFlag(val emoji: String? = null)
 
+@Serializable
+private data class IpApiCoResponse(
+    val ip: String? = null,
+    val city: String? = null,
+    val region: String? = null,
+    @SerialName("country_name") val countryName: String? = null,
+    @SerialName("country_code") val countryCode: String? = null,
+    val org: String? = null,
+    val asn: String? = null,
+    val timezone: String? = null,
+    val version: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+)
+
 class IpLookupManager {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -64,20 +79,50 @@ class IpLookupManager {
             return@withContext IpLookupResult(ip = cleanIp, error = "invalid_ip")
         }
 
-        try {
-            val body = httpGet("https://ipwho.is/$cleanIp") ?: return@withContext IpLookupResult(
-                ip = cleanIp,
+        lookupFromApi("https://ipwho.is/$cleanIp", cleanIp)
+    }
+
+    suspend fun lookupSelf(): IpLookupResult = withContext(Dispatchers.IO) {
+        lookupFromApi("https://ipwho.is/", "").takeUnless { it.error != null }
+            ?: lookupFromIpApiCo()
+            ?: IpLookupResult(ip = "", error = "lookup_failed")
+    }
+
+    private fun lookupFromIpApiCo(): IpLookupResult? {
+        val body = httpGet("https://ipapi.co/json/") ?: return null
+        return try {
+            val response = json.decodeFromString<IpApiCoResponse>(body)
+            val ip = response.ip ?: return null
+            IpLookupResult(
+                ip = ip,
+                type = response.version,
+                country = response.countryName,
+                countryCode = response.countryCode,
+                region = response.region,
+                city = response.city,
+                latitude = response.latitude,
+                longitude = response.longitude,
+                org = response.org,
+                asn = response.asn,
+                timezone = response.timezone,
+            )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun lookupFromApi(url: String, fallbackIp: String): IpLookupResult {
+        return try {
+            val body = httpGet(url) ?: return IpLookupResult(
+                ip = fallbackIp,
                 error = "lookup_failed",
             )
             val response = json.decodeFromString<IpWhoIsResponse>(body)
             if (!response.success) {
-                return@withContext IpLookupResult(
-                    ip = cleanIp,
-                    error = "lookup_failed",
-                )
+                return IpLookupResult(ip = fallbackIp, error = "lookup_failed")
             }
             IpLookupResult(
-                ip = response.ip ?: cleanIp,
+                ip = response.ip ?: fallbackIp,
                 type = response.type,
                 continent = response.continent,
                 country = response.country,
@@ -93,7 +138,7 @@ class IpLookupManager {
                 flagEmoji = response.flag?.emoji,
             )
         } catch (_: Exception) {
-            IpLookupResult(ip = cleanIp, error = "lookup_failed")
+            IpLookupResult(ip = fallbackIp, error = "lookup_failed")
         }
     }
 
