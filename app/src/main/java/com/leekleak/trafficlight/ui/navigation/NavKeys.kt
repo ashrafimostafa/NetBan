@@ -45,3 +45,6 @@ data object IpLookupTool : NavKey
 
 @Serializable
 data object MyNetworkTool : NavKey
+
+@Serializable
+data object TracerouteTool : NavKey

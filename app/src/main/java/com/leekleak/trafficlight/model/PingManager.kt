@@ -108,6 +108,79 @@ class PingManager {
 
     fun normalizeHost(input: String): String = sanitizeHost(input)
 
+    suspend fun pingHop(ttl: Int, builder: (Int) -> Array<String>): String = withContext(Dispatchers.IO) {
+        runPingProcess(builder(ttl))
+    }
+
+    suspend fun findWorkingTtlCommand(host: String): ((Int) -> Array<String>)? =
+        withContext(Dispatchers.IO) {
+            val cleanHost = sanitizeHost(host)
+            if (cleanHost.isBlank()) return@withContext null
+
+            val candidates = pingTtlCommandBuilders(cleanHost)
+            for (builder in candidates) {
+                val probe = runPingProcess(builder(1))
+                if (probe.startsWith("ping:") || isInvalidPingOption(probe)) continue
+                if (ttlCommandWorks(builder, cleanHost)) {
+                    return@withContext builder
+                }
+            }
+            candidates.firstOrNull { builder ->
+                val probe = runPingProcess(builder(1))
+                !probe.startsWith("ping:") && !isInvalidPingOption(probe)
+            }
+        }
+
+    private fun pingTtlCommandBuilders(host: String): List<(Int) -> Array<String>> = listOf(
+        { ttl -> arrayOf("ping", "-c", "1", "-t", ttl.toString(), "-w", "3", host) },
+        { ttl -> arrayOf("ping", "-c", "1", "-t", ttl.toString(), "-W", "3", host) },
+        { ttl -> arrayOf("/system/bin/ping", "-c", "1", "-t", ttl.toString(), "-w", "3", host) },
+        { ttl -> arrayOf("/system/bin/ping", "-c", "1", "-t", ttl.toString(), "-W", "3", host) },
+        { ttl -> arrayOf("ping", "-c", "1", "-T", ttl.toString(), "-w", "3", host) },
+        { ttl -> arrayOf("ping", "-c", "1", "-h", ttl.toString(), "-w", "3", host) },
+        { ttl -> arrayOf("ping", "-c", "1", "-w", "3", "--ttl=$ttl", host) },
+    )
+
+    private fun ttlCommandWorks(builder: (Int) -> Array<String>, host: String): Boolean {
+        val lowTtlOutput = runPingProcess(builder(1))
+        if (lowTtlOutput.isBlank() || isInvalidPingOption(lowTtlOutput)) return false
+        if (isTtlExceeded(lowTtlOutput)) return true
+
+        val highTtlOutput = runPingProcess(builder(20))
+        val lowReached = hasEchoReply(lowTtlOutput, host)
+        val highReached = hasEchoReply(highTtlOutput, host)
+        return highReached && !lowReached
+    }
+
+    private fun isTtlExceeded(output: String): Boolean {
+        return output.contains("Time to live exceeded", ignoreCase = true) ||
+            output.contains("ttl exceeded", ignoreCase = true) ||
+            output.contains("Hop limit exceeded", ignoreCase = true)
+    }
+
+    private fun hasEchoReply(output: String, host: String): Boolean {
+        return output.contains("bytes from", ignoreCase = true) &&
+            !isTtlExceeded(output)
+    }
+
+    private fun isInvalidPingOption(output: String): Boolean {
+        return output.contains("invalid option", ignoreCase = true) ||
+            output.contains("unknown option", ignoreCase = true) ||
+            output.contains("unrecognized option", ignoreCase = true)
+    }
+
+    private fun runPingProcess(command: Array<String>): String {
+        val process = ProcessBuilder(*command).redirectErrorStream(true).start()
+        return try {
+            val output = process.inputStream.bufferedReader().readText()
+            process.waitFor()
+            output
+        } catch (_: Exception) {
+            process.destroy()
+            ""
+        }
+    }
+
     private fun sanitizeHost(input: String): String {
         var host = input.trim()
         if (host.startsWith("http://", ignoreCase = true)) host = host.substring(7)

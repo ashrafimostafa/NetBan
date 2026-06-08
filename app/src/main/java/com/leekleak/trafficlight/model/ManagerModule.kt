@@ -9,6 +9,7 @@ val managerModule = module {
     single { PermissionManager(androidContext()) }
     single { NetworkUsageManager(get(), get(), get()) }
     single { PingManager() }
+    single { TracerouteManager(get()) }
     single { WhoisManager() }
     single { IpLookupManager() }
     single { MyNetworkManager(get(), get(), get()) }

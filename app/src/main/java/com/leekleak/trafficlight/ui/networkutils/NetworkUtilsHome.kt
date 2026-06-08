@@ -23,6 +23,7 @@ import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.navigation.IpLookupTool
 import com.leekleak.trafficlight.ui.navigation.MyNetworkTool
 import com.leekleak.trafficlight.ui.navigation.PingTool
+import com.leekleak.trafficlight.ui.navigation.TracerouteTool
 import com.leekleak.trafficlight.ui.navigation.WhoisTool
 import com.leekleak.trafficlight.util.PageTitle
 import dev.chrisbanes.haze.hazeSource
@@ -103,6 +104,25 @@ fun NetworkUtilsHome(paddingValues: PaddingValues) {
                     description = stringResource(R.string.my_network_tile_description),
                     icon = painterResource(R.drawable.vpn),
                     onClick = { navigator.goTo(MyNetworkTool) },
+                )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max)
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                NetworkUtilTile(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    title = stringResource(R.string.traceroute),
+                    description = stringResource(R.string.traceroute_tile_description),
+                    icon = painterResource(R.drawable.hotspot),
+                    onClick = { navigator.goTo(TracerouteTool) },
                 )
             }
         }

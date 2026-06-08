@@ -10,6 +10,9 @@ import com.leekleak.trafficlight.model.MyNetworkManager
 import com.leekleak.trafficlight.model.PingManager
 import com.leekleak.trafficlight.model.PingReply
 import com.leekleak.trafficlight.model.PingResult
+import com.leekleak.trafficlight.model.TracerouteHop
+import com.leekleak.trafficlight.model.TracerouteManager
+import com.leekleak.trafficlight.model.TracerouteResult
 import com.leekleak.trafficlight.model.WhoisManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -49,11 +52,19 @@ data class MyNetworkUiState(
     val error: String? = null,
 )
 
+data class TracerouteUiState(
+    val host: String = "",
+    val isRunning: Boolean = false,
+    val hops: List<TracerouteHop> = emptyList(),
+    val result: TracerouteResult? = null,
+)
+
 class NetworkUtilsVM(
     private val pingManager: PingManager,
     private val whoisManager: WhoisManager,
     private val ipLookupManager: IpLookupManager,
     private val myNetworkManager: MyNetworkManager,
+    private val tracerouteManager: TracerouteManager,
     private val pingBookmarkRepo: PingBookmarkRepo,
 ) : ViewModel() {
 
@@ -80,10 +91,14 @@ class NetworkUtilsVM(
     private val _myNetworkState = MutableStateFlow(MyNetworkUiState())
     val myNetworkState: StateFlow<MyNetworkUiState> = _myNetworkState.asStateFlow()
 
+    private val _tracerouteState = MutableStateFlow(TracerouteUiState())
+    val tracerouteState: StateFlow<TracerouteUiState> = _tracerouteState.asStateFlow()
+
     private var pingJob: Job? = null
     private var whoisJob: Job? = null
     private var ipLookupJob: Job? = null
     private var myNetworkJob: Job? = null
+    private var tracerouteJob: Job? = null
 
     fun setHost(host: String) {
         _pingState.update { it.copy(host = host) }
@@ -255,5 +270,52 @@ class NetworkUtilsVM(
                 }
             }
         }
+    }
+
+    fun setTracerouteHost(host: String) {
+        _tracerouteState.update { it.copy(host = host) }
+    }
+
+    fun startTraceroute() {
+        val host = _tracerouteState.value.host.trim()
+        if (host.isBlank() || _tracerouteState.value.isRunning) return
+
+        tracerouteJob?.cancel()
+        tracerouteJob = viewModelScope.launch {
+            _tracerouteState.update {
+                TracerouteUiState(host = host, isRunning = true)
+            }
+            try {
+                val result = tracerouteManager.trace(host) { hop ->
+                    _tracerouteState.update { state ->
+                        state.copy(hops = state.hops + hop)
+                    }
+                }
+                _tracerouteState.update { state ->
+                    state.copy(
+                        isRunning = false,
+                        result = result,
+                        hops = result.hops,
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _tracerouteState.update { state ->
+                    state.copy(isRunning = false)
+                }
+            }
+        }
+    }
+
+    fun stopTraceroute() {
+        tracerouteJob?.cancel()
+        tracerouteJob = null
+        _tracerouteState.update { it.copy(isRunning = false) }
+    }
+
+    fun clearTraceroute() {
+        stopTraceroute()
+        _tracerouteState.value = TracerouteUiState(host = _tracerouteState.value.host)
     }
 }
