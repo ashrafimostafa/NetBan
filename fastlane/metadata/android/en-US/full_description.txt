@@ -1,4 +1,4 @@
-Traffic Light is an open-source tool for tracking your network usage while ensuring total privacy. Inspired by Internet Speed Meter and GlassWire.
+NetBan is an open-source tool for tracking your network usage while ensuring total privacy. Inspired by Traffic Light.
 
 Features:
 - Free and open source

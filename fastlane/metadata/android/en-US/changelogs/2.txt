@@ -1,1 +1,5 @@
-- Initial F-Droid release
+- Create network utility section
+- Add ping tool
+- Add ip info tool
+- Add traceroute tool
+- Fix toolbar padding
