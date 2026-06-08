@@ -3,6 +3,7 @@ package com.leekleak.trafficlight.ui
 import com.leekleak.trafficlight.database.HistoryPreferenceRepo
 import com.leekleak.trafficlight.ui.history.HistoryVM
 import com.leekleak.trafficlight.ui.overview.OverviewVM
+import com.leekleak.trafficlight.ui.networkutils.NetworkUtilsVM
 import com.leekleak.trafficlight.ui.settings.SettingsVM
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -19,4 +20,5 @@ val viewModelModule = module {
     }
     viewModel { SettingsVM(get()) }
     viewModel { OverviewVM(get()) }
+    viewModel { NetworkUtilsVM(get(), get()) }
 }

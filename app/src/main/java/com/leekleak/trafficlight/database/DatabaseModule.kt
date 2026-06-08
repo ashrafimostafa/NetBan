@@ -8,6 +8,7 @@ import org.koin.dsl.module
 val databaseModule = module {
     single { AppPreferenceRepo(get(), get()) }
     single { HistoryPreferenceRepo(get(), get()) }
+    single { PingBookmarkRepo(get()) }
 
     single {
         Room.databaseBuilder(

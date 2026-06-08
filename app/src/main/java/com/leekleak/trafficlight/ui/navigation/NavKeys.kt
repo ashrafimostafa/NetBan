@@ -30,3 +30,6 @@ data class PlanConfig(val subscriberId: String) : NavKey
  */
 @Serializable
 data object NotificationSettings : NavKey
+
+@Serializable
+data object NetworkUtils : NavKey
