@@ -119,4 +119,9 @@ dependencies {
 
     implementation(libs.haze)
     implementation(libs.haze.materials)
+
+    implementation(libs.sshj)
+    implementation(libs.bouncycastle.provider)
+    implementation(libs.bouncycastle.pkix)
+    implementation(libs.bouncycastle.util)
 }

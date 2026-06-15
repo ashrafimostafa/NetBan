@@ -24,6 +24,7 @@ import com.leekleak.trafficlight.ui.navigation.IpLookupTool
 import com.leekleak.trafficlight.ui.navigation.MyNetworkTool
 import com.leekleak.trafficlight.ui.navigation.PingTool
 import com.leekleak.trafficlight.ui.navigation.TracerouteTool
+import com.leekleak.trafficlight.ui.navigation.SshTool
 import com.leekleak.trafficlight.ui.navigation.WhoisTool
 import com.leekleak.trafficlight.util.PageTitle
 import dev.chrisbanes.haze.hazeSource
@@ -123,6 +124,15 @@ fun NetworkUtilsHome(paddingValues: PaddingValues) {
                     description = stringResource(R.string.traceroute_tile_description),
                     icon = painterResource(R.drawable.hotspot),
                     onClick = { navigator.goTo(TracerouteTool) },
+                )
+                NetworkUtilTile(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    title = stringResource(R.string.ssh),
+                    description = stringResource(R.string.ssh_tile_description),
+                    icon = painterResource(R.drawable.terminal),
+                    onClick = { navigator.goTo(SshTool) },
                 )
             }
         }

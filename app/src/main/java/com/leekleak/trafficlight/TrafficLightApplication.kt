@@ -3,6 +3,7 @@ package com.leekleak.trafficlight
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import com.leekleak.trafficlight.model.SshSecuritySetup
 import com.leekleak.trafficlight.database.databaseModule
 import com.leekleak.trafficlight.model.managerModule
 import com.leekleak.trafficlight.ui.navigation.navigationModule
@@ -14,6 +15,7 @@ import java.util.Locale
 class TrafficLightApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        SshSecuritySetup.ensureInitialized()
 
         startKoin {
             androidContext(this@TrafficLightApplication)

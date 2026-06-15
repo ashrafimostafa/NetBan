@@ -56,6 +56,7 @@ import com.leekleak.trafficlight.ui.networkutils.IpLookupScreen
 import com.leekleak.trafficlight.ui.networkutils.MyNetworkScreen
 import com.leekleak.trafficlight.ui.networkutils.NetworkUtilsHome
 import com.leekleak.trafficlight.ui.networkutils.PingScreen
+import com.leekleak.trafficlight.ui.networkutils.SshScreen
 import com.leekleak.trafficlight.ui.networkutils.TracerouteScreen
 import com.leekleak.trafficlight.ui.networkutils.WhoisScreen
 import com.leekleak.trafficlight.ui.settings.NotificationSettings
@@ -142,6 +143,7 @@ fun NavigationManager() {
                     entry<IpLookupTool> { IpLookupScreen(paddingValues) }
                     entry<MyNetworkTool> { MyNetworkScreen(paddingValues) }
                     entry<TracerouteTool> { TracerouteScreen(paddingValues) }
+                    entry<SshTool> { SshScreen(paddingValues) }
                 },
                 transitionSpec = {
                     if (backStack.size == 1) fadeIn() togetherWith fadeOut()

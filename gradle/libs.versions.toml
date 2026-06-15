@@ -20,6 +20,8 @@ timber = "5.0.1"
 shizuku = "13.1.5"
 glance = "1.2.0-rc01"
 work = "2.11.2"
+sshj = "0.39.0"
+bouncycastle = "1.78.1"
 
 [libraries]
 
@@ -74,6 +76,11 @@ androidx-glance-material3 = { module = "androidx.glance:glance-material3", versi
 androidx-glance-appwidget-preview = { module = "androidx.glance:glance-appwidget-preview", version.ref = "glance" }
 androidx-glance-preview = { module = "androidx.glance:glance-preview", version.ref = "glance" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+
+sshj = { module = "com.hierynomus:sshj", version.ref = "sshj" }
+bouncycastle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-util = { module = "org.bouncycastle:bcutil-jdk18on", version.ref = "bouncycastle" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

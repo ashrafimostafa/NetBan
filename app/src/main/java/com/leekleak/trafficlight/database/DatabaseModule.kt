@@ -9,6 +9,7 @@ val databaseModule = module {
     single { AppPreferenceRepo(get(), get()) }
     single { HistoryPreferenceRepo(get(), get()) }
     single { PingBookmarkRepo(get()) }
+    single { SshProfileRepo(get()) }
 
     single {
         Room.databaseBuilder(

@@ -21,3 +21,6 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class com.leekleak.trafficlight.services.TrafficLightShizukuService { *; }
+
+-dontwarn org.bouncycastle.**
+-keep class org.bouncycastle.** { *; }
