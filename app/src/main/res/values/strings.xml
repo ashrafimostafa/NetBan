@@ -187,6 +187,7 @@
     <string name="my_network_vpn_app">اپلیکیشن VPN</string>
     <string name="my_network_underlying">اتصال پایه</string>
     <string name="my_network_public_ip">IP عمومی</string>
+    <string name="my_network_underlying_ip">IP عمومی (بدون VPN)</string>
     <string name="my_network_vpn_ip">IP عمومی (VPN)</string>
     <string name="my_network_signaling">اطلاعات سیگنال و اتصال</string>
     <string name="my_network_interfaces">رابط‌های شبکه</string>

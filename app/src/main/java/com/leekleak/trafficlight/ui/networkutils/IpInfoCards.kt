@@ -11,9 +11,12 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.model.IpLookupResult
@@ -48,15 +51,19 @@ fun IpLookupResultContent(result: IpLookupResult, modifier: Modifier = Modifier)
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            result.flagEmoji?.let {
-                Text(text = it, style = MaterialTheme.typography.headlineMedium)
+            result.displayFlagEmoji?.let { flag ->
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Text(text = flag, style = MaterialTheme.typography.headlineMedium)
+                }
             }
             Column {
-                Text(
-                    text = result.ip,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontFamily = jetbrainsMono(),
-                )
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Text(
+                        text = result.ip,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontFamily = jetbrainsMono(),
+                    )
+                }
                 result.type?.let {
                     Text(
                         text = it,
@@ -127,10 +134,12 @@ fun IpInfoRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            modifier = Modifier.weight(0.6f),
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Text(
+                modifier = Modifier.weight(0.6f),
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }

@@ -125,6 +125,11 @@ fun MyNetworkScreen(paddingValues: PaddingValues) {
                 }
             }
 
+            info.underlyingPublicIp?.takeIf { info.isVpnActive && it.error == null }?.let { underlyingIp ->
+                categoryTitleSmall { stringResource(R.string.my_network_underlying_ip) }
+                item { IpLookupResultCard(underlyingIp) }
+            }
+
             categoryTitleSmall { stringResource(R.string.my_network_signaling) }
             item { SignalingCard(info) }
 

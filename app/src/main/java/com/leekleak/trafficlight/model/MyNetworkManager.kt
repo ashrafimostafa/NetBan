@@ -3,6 +3,7 @@ package com.leekleak.trafficlight.model
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.provider.Settings
@@ -24,6 +25,7 @@ data class MyNetworkInfo(
     val isVpnActive: Boolean,
     val vpnAppName: String?,
     val publicIp: IpLookupResult?,
+    val underlyingPublicIp: IpLookupResult?,
     val activeConnection: String?,
     val underlyingConnection: String?,
     val links: List<NetworkLinkInfo>,
@@ -41,17 +43,100 @@ class MyNetworkManager(
 
     suspend fun gather(): MyNetworkInfo = withContext(Dispatchers.IO) {
         val local = collectLocalInfo()
-        val publicIp = ipLookupManager.lookupSelf()
-        local.copy(publicIp = publicIp)
+        val lookupNetwork = resolveLookupNetwork(
+            vpnActive = local.isVpnActive,
+            activeConnection = local.activeConnection,
+        )
+        val publicIp = withBoundNetwork(lookupNetwork) {
+            ipLookupManager.lookupSelf(lookupNetwork)
+        }
+        val underlyingNetwork = if (local.isVpnActive) {
+            findUnderlyingNetwork(local.underlyingConnection ?: local.activeConnection)
+        } else {
+            null
+        }
+        val underlyingPublicIp = underlyingNetwork?.let { network ->
+            withBoundNetwork(network) {
+                ipLookupManager.lookupSelf(network)
+            }
+        }
+        local.copy(publicIp = publicIp, underlyingPublicIp = underlyingPublicIp)
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun <T> withBoundNetwork(network: Network?, block: suspend () -> T): T {
+        if (network == null) return block()
+        val previousNetwork = connectivityManager.boundNetworkForProcess
+        val bound = connectivityManager.bindProcessToNetwork(network)
+        try {
+            return block()
+        } finally {
+            if (bound) {
+                connectivityManager.bindProcessToNetwork(previousNetwork)
+            }
+        }
+    }
+
+    private fun resolveLookupNetwork(vpnActive: Boolean, activeConnection: String?): Network? {
+        if (vpnActive) {
+            return connectivityManager.activeNetwork
+        }
+
+        findNetworkForConnection(activeConnection, requireNotVpn = true)?.let { return it }
+
+        val active = connectivityManager.activeNetwork
+        val activeCaps = active?.let { connectivityManager.getNetworkCapabilities(it) }
+        if (active != null && activeCaps?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) != true) {
+            return active
+        }
+
+        return findUnderlyingNetwork(activeConnection)
+    }
+
+    private fun findNetworkForConnection(activeConnection: String?, requireNotVpn: Boolean): Network? {
+        for (transport in transportsFromLabel(activeConnection)) {
+            findNetworkWithTransport(transport, requireNotVpn)?.let { return it }
+        }
+        return null
+    }
+
+    private fun transportsFromLabel(label: String?): List<Int> {
+        if (label.isNullOrBlank()) return emptyList()
+        return buildList {
+            if (label.contains("WiFi")) add(NetworkCapabilities.TRANSPORT_WIFI)
+            if (label.contains("Cellular")) add(NetworkCapabilities.TRANSPORT_CELLULAR)
+            if (label.contains("Ethernet")) add(NetworkCapabilities.TRANSPORT_ETHERNET)
+        }
+    }
+
+    private fun findNetworkWithTransport(transport: Int, requireNotVpn: Boolean): Network? {
+        return connectivityManager.allNetworks.firstOrNull { network ->
+            val caps = connectivityManager.getNetworkCapabilities(network) ?: return@firstOrNull false
+            caps.hasTransport(transport) &&
+                caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                (!requireNotVpn || !caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
+        }
+    }
+
+    private fun findUnderlyingNetwork(preferredConnection: String?): Network? {
+        findNetworkForConnection(preferredConnection, requireNotVpn = true)?.let { return it }
+
+        return connectivityManager.allNetworks.firstOrNull { network ->
+            val caps = connectivityManager.getNetworkCapabilities(network) ?: return@firstOrNull false
+            !caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) &&
+                caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                (
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                        caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                        caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                    )
+        }
     }
 
     @SuppressLint("MissingPermission")
     private fun collectLocalInfo(): MyNetworkInfo {
         val activeNetwork = connectivityManager.activeNetwork
         val activeCaps = activeNetwork?.let { connectivityManager.getNetworkCapabilities(it) }
-        val isVpnActive = activeCaps?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
-
-        val vpnAppName = if (isVpnActive) resolveVpnAppName() else null
 
         val links = connectivityManager.allNetworks.mapNotNull { network ->
             val caps = connectivityManager.getNetworkCapabilities(network) ?: return@mapNotNull null
@@ -71,6 +156,10 @@ class MyNetworkManager(
         }
 
         val activeLink = links.find { it.isActive }
+        val isVpnActive = activeCaps?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true ||
+            activeLink?.isVpn == true
+        val vpnAppName = if (isVpnActive) resolveVpnAppName() else null
+
         val underlyingConnection = links
             .filter { !it.isVpn }
             .map { it.networkType }
@@ -84,6 +173,7 @@ class MyNetworkManager(
             isVpnActive = isVpnActive,
             vpnAppName = vpnAppName,
             publicIp = null,
+            underlyingPublicIp = null,
             activeConnection = activeLink?.networkType,
             underlyingConnection = underlyingConnection,
             links = links,
