@@ -50,4 +50,7 @@ data object MyNetworkTool : NavKey
 data object TracerouteTool : NavKey
 
 @Serializable
+data object SiteIpTool : NavKey
+
+@Serializable
 data object SshTool : NavKey

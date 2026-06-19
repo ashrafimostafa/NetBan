@@ -24,6 +24,7 @@ import com.leekleak.trafficlight.ui.navigation.IpLookupTool
 import com.leekleak.trafficlight.ui.navigation.MyNetworkTool
 import com.leekleak.trafficlight.ui.navigation.PingTool
 import com.leekleak.trafficlight.ui.navigation.TracerouteTool
+import com.leekleak.trafficlight.ui.navigation.SiteIpTool
 import com.leekleak.trafficlight.ui.navigation.SshTool
 import com.leekleak.trafficlight.ui.navigation.WhoisTool
 import com.leekleak.trafficlight.util.PageTitle
@@ -92,19 +93,19 @@ fun NetworkUtilsHome(paddingValues: PaddingValues) {
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    title = stringResource(R.string.ip_lookup),
-                    description = stringResource(R.string.ip_lookup_tile_description),
-                    icon = painterResource(R.drawable.cellular),
-                    onClick = { navigator.goTo(IpLookupTool) },
+                    title = stringResource(R.string.site_ip),
+                    description = stringResource(R.string.site_ip_tile_description),
+                    icon = painterResource(R.drawable.open_in_new),
+                    onClick = { navigator.goTo(SiteIpTool) },
                 )
                 NetworkUtilTile(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    title = stringResource(R.string.my_network),
-                    description = stringResource(R.string.my_network_tile_description),
-                    icon = painterResource(R.drawable.vpn),
-                    onClick = { navigator.goTo(MyNetworkTool) },
+                    title = stringResource(R.string.ip_lookup),
+                    description = stringResource(R.string.ip_lookup_tile_description),
+                    icon = painterResource(R.drawable.cellular),
+                    onClick = { navigator.goTo(IpLookupTool) },
                 )
             }
         }
@@ -120,11 +121,30 @@ fun NetworkUtilsHome(paddingValues: PaddingValues) {
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
+                    title = stringResource(R.string.my_network),
+                    description = stringResource(R.string.my_network_tile_description),
+                    icon = painterResource(R.drawable.vpn),
+                    onClick = { navigator.goTo(MyNetworkTool) },
+                )
+                NetworkUtilTile(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     title = stringResource(R.string.traceroute),
                     description = stringResource(R.string.traceroute_tile_description),
                     icon = painterResource(R.drawable.hotspot),
                     onClick = { navigator.goTo(TracerouteTool) },
                 )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max)
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 NetworkUtilTile(
                     modifier = Modifier
                         .weight(1f)

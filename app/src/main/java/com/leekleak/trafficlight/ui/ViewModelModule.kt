@@ -21,6 +21,6 @@ val viewModelModule = module {
     }
     viewModel { SettingsVM(get()) }
     viewModel { OverviewVM(get()) }
-    viewModel { NetworkUtilsVM(get(), get(), get(), get(), get(), get()) }
+    viewModel { NetworkUtilsVM(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SshVM(get(), get()) }
 }

@@ -12,6 +12,7 @@ val managerModule = module {
     single { TracerouteManager(get()) }
     single { WhoisManager() }
     single { IpLookupManager() }
+    single { SiteIpManager(get(), get()) }
     single { MyNetworkManager(get(), get(), get()) }
     single { SshManager() }
     factory { AppIconFetcher.Factory(get()) }

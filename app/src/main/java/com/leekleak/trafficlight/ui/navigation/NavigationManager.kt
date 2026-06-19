@@ -56,6 +56,7 @@ import com.leekleak.trafficlight.ui.networkutils.IpLookupScreen
 import com.leekleak.trafficlight.ui.networkutils.MyNetworkScreen
 import com.leekleak.trafficlight.ui.networkutils.NetworkUtilsHome
 import com.leekleak.trafficlight.ui.networkutils.PingScreen
+import com.leekleak.trafficlight.ui.networkutils.SiteIpScreen
 import com.leekleak.trafficlight.ui.networkutils.SshScreen
 import com.leekleak.trafficlight.ui.networkutils.TracerouteScreen
 import com.leekleak.trafficlight.ui.networkutils.WhoisScreen
@@ -141,6 +142,7 @@ fun NavigationManager() {
                     entry<PingTool> { PingScreen(paddingValues) }
                     entry<WhoisTool> { WhoisScreen(paddingValues) }
                     entry<IpLookupTool> { IpLookupScreen(paddingValues) }
+                    entry<SiteIpTool> { SiteIpScreen(paddingValues) }
                     entry<MyNetworkTool> { MyNetworkScreen(paddingValues) }
                     entry<TracerouteTool> { TracerouteScreen(paddingValues) }
                     entry<SshTool> { SshScreen(paddingValues) }

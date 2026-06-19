@@ -13,6 +13,8 @@ import com.leekleak.trafficlight.model.PingResult
 import com.leekleak.trafficlight.model.TracerouteHop
 import com.leekleak.trafficlight.model.TracerouteManager
 import com.leekleak.trafficlight.model.TracerouteResult
+import com.leekleak.trafficlight.model.SiteIpResult
+import com.leekleak.trafficlight.model.SiteIpManager
 import com.leekleak.trafficlight.model.WhoisManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -52,6 +54,13 @@ data class MyNetworkUiState(
     val error: String? = null,
 )
 
+data class SiteIpUiState(
+    val url: String = "",
+    val isRunning: Boolean = false,
+    val result: SiteIpResult? = null,
+    val error: String? = null,
+)
+
 data class TracerouteUiState(
     val host: String = "",
     val isRunning: Boolean = false,
@@ -66,6 +75,7 @@ class NetworkUtilsVM(
     private val myNetworkManager: MyNetworkManager,
     private val tracerouteManager: TracerouteManager,
     private val pingBookmarkRepo: PingBookmarkRepo,
+    private val siteIpManager: SiteIpManager,
 ) : ViewModel() {
 
     private val _pingState = MutableStateFlow(PingUiState())
@@ -94,11 +104,15 @@ class NetworkUtilsVM(
     private val _tracerouteState = MutableStateFlow(TracerouteUiState())
     val tracerouteState: StateFlow<TracerouteUiState> = _tracerouteState.asStateFlow()
 
+    private val _siteIpState = MutableStateFlow(SiteIpUiState())
+    val siteIpState: StateFlow<SiteIpUiState> = _siteIpState.asStateFlow()
+
     private var pingJob: Job? = null
     private var whoisJob: Job? = null
     private var ipLookupJob: Job? = null
     private var myNetworkJob: Job? = null
     private var tracerouteJob: Job? = null
+    private var siteIpJob: Job? = null
 
     fun setHost(host: String) {
         _pingState.update { it.copy(host = host) }
@@ -317,5 +331,47 @@ class NetworkUtilsVM(
     fun clearTraceroute() {
         stopTraceroute()
         _tracerouteState.value = TracerouteUiState(host = _tracerouteState.value.host)
+    }
+
+    fun setSiteIpUrl(url: String) {
+        _siteIpState.update { it.copy(url = url) }
+    }
+
+    fun resolveSiteIp() {
+        val url = _siteIpState.value.url.trim()
+        if (url.isBlank() || _siteIpState.value.isRunning) return
+
+        siteIpJob?.cancel()
+        siteIpJob = viewModelScope.launch {
+            _siteIpState.update { SiteIpUiState(url = url, isRunning = true) }
+            try {
+                val result = siteIpManager.resolve(url)
+                _siteIpState.update {
+                    SiteIpUiState(
+                        url = url,
+                        isRunning = false,
+                        result = result.takeIf { it.error == null },
+                        error = result.error,
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _siteIpState.update { state ->
+                    state.copy(isRunning = false, error = "resolve_failed")
+                }
+            }
+        }
+    }
+
+    fun stopSiteIp() {
+        siteIpJob?.cancel()
+        siteIpJob = null
+        _siteIpState.update { it.copy(isRunning = false) }
+    }
+
+    fun clearSiteIp() {
+        stopSiteIp()
+        _siteIpState.value = SiteIpUiState(url = _siteIpState.value.url)
     }
 }
