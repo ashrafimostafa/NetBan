@@ -24,3 +24,4 @@
 
 -dontwarn org.bouncycastle.**
 -keep class org.bouncycastle.** { *; }
+-dontwarn sun.security.x509.X509Key
